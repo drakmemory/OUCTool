@@ -71,6 +71,7 @@ void App::MainWindow()
 
     if (all_courses.is_null())
     {
+        // 首次显示获取课程列表
         session->SetUrl(cpr::Url{
             "https://lms.ouchn.cn/api/my-courses?conditions={%22status%22:[%22ongoing%22]}&fields=id,name,display_name,completeness&page=1&page_size=100"
             });
@@ -94,6 +95,7 @@ void App::MainWindow()
     }
     else
     {
+		// 显示课程列表
         auto& courses = all_courses["courses"];
         if (ImGui::BeginChild("ScrollingRegion", ImVec2(0, ImGui::GetWindowSize().y - 50), ImGuiWindowFlags_NoScrollbar, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize))
         {
@@ -259,6 +261,28 @@ void App::MainWindow()
                             }else
                                 session->Post();
 							// 防止屏蔽请求，间隔8秒刷一次
+                            std::this_thread::sleep_for(std::chrono::seconds(8));
+                        }
+                        // 开始刷课程时长
+                        session->SetUrl("https://lms.ouchn.cn/statistics/api/user-visits");
+                        nlohmann::json visit_payload = {
+                            {"user_id", this->userId},
+                            {"course_id", course_id},
+                            {"visit_duration", std::stoll(courses[i][1].get<std::string>())}
+						};
+                        session->SetBody(cpr::Body{ visit_payload.dump()});
+						session->Post();
+						// 开始刷观看次数
+                        for (int i = 0; i < std::stoi(courses[i][1].get<std::string>()) - 1; i++)
+                        {
+                            nlohmann::json visit_payload = {
+                            {"user_id", this->userId},
+                            {"course_id", course_id},
+                            {"visit_duration", 0}
+                            };
+                            session->SetBody(cpr::Body{ visit_payload.dump() });
+                            session->Post();
+                            // 防止屏蔽请求，间隔8秒刷一次
                             std::this_thread::sleep_for(std::chrono::seconds(8));
                         }
                     }
