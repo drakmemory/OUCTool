@@ -2,6 +2,7 @@
 
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 set(CPR_USE_SYSTEM_CURL OFF CACHE BOOL "" FORCE)
+set(CPR_USE_LIB_PSL OFF)
 
 FetchContent_Declare(
     cpr
