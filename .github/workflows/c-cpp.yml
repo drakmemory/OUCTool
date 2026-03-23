@@ -1,7 +1,9 @@
-name: Build EXE (Debug Version)
+name: Nightly Build
 
 on:
-  push:
+  schedule:
+    - cron: '0 16 * * *'   # 北京时间每天 00:00
+  workflow_dispatch:
 
 jobs:
   build:
@@ -10,11 +12,18 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: CMake 配置
+    - name: CMake
       run: cmake -B build -S . -A x64
 
-    - name: 编译（显示详细日志）
-      run: cmake --build build --config Release --verbose
+    - name: Build
+      run: cmake --build build --config Release
 
-    - name: 查看输出目录
-      run: dir build/Release
+    - name: 发布 Nightly
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: nightly
+        name: Nightly Build
+        files: build/Release/*.exe
+        prerelease: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
