@@ -1,4 +1,4 @@
-name: Nightly Build
+﻿name: Nightly Build
 
 on:
   schedule:
@@ -12,6 +12,12 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+  
+    - name: 安装 Python
+      uses: actions/setup-python@v5
+
+    - name: 安装 meson + ninja
+      run: pip install meson ninja
 
     - name: CMake
       run: cmake -B build -S . -A x64

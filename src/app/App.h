@@ -1,11 +1,11 @@
-#pragma once
+ï»¿#pragma once
 #include <memory>
 #include "platform/Window.h"
 #include "renderer/Renderer.h"
 #include "ui/ImGuiLayer.h"
 #include <nlohmann/json.hpp>
 #include <cpr/cpr.h>
-
+#pragma execution_character_set("utf-8")
 class App
 {
 public:
@@ -18,16 +18,16 @@ private:
     std::unique_ptr<ImGuiLayer> imGuiLayer;
     char username[64]{};
     char password[64]{};
-    std::string login_btn_text = "µÇÂ¼";
+    std::string login_btn_text = "ç™»å½•";
     std::thread run_thread;
     std::vector<std::vector<char*>> courseValue;
     std::shared_ptr<cpr::Session> session = std::make_shared<cpr::Session>();
-	long long userId = 0; // ÓÃ»§ID
-	std::string name; // ÓÃ»§ĞÕÃû
-	bool loginInProgress = false; // µÇÂ¼ÖĞ×´Ì¬
+	long long userId = 0; // ç”¨æˆ·ID
+	std::string name; // ç”¨æˆ·å§“å
+	bool loginInProgress = false; // ç™»å½•ä¸­çŠ¶æ€
     cpr::Cookies _cookies;
     nlohmann::json all_courses;
-    bool loggedIn = false; // µÇÂ¼×´Ì¬
+    bool loggedIn = false; // ç™»å½•çŠ¶æ€
 
     void LoginWindow();
     void MainWindow();
