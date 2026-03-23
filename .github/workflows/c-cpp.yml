@@ -1,23 +1,20 @@
-name: Windows CMake Build
+name: Build EXE (Debug Version)
 
 on:
   push:
-    branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
 
 jobs:
   build:
     runs-on: windows-latest
 
     steps:
-    - name: 拉取代码
-      uses: actions/checkout@v4
-    - name: 配置 MSVC
-      run: ilammy/msvc-dev-cmd@v1
-    - name: 构建
-      run: |
-        mkdir build
-        cd build
-        cmake .. -G "NMake Makefiles"
-        nmake
+    - uses: actions/checkout@v4
+
+    - name: CMake 配置
+      run: cmake -B build -S . -A x64
+
+    - name: 编译（显示详细日志）
+      run: cmake --build build --config Release --verbose
+
+    - name: 查看输出目录
+      run: dir build/Release
