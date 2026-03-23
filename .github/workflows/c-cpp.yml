@@ -1,4 +1,4 @@
-name: C/C++ CI
+name: Windows CMake Build
 
 on:
   push:
@@ -8,15 +8,16 @@ on:
 
 jobs:
   build:
-
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
-    - name: Checkout code
+    - name: 拉取代码
       uses: actions/checkout@v4
-    - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Release
-    - name: Build
-      run: cmake --build ${{github.workspace}}/build --config Release
-    - name: Test
-      run: cd build && ctest
+    - name: 配置 MSVC
+      run: ilammy/msvc-dev-cmd@v1
+    - name: 构建
+      run: |
+        mkdir build
+        cd build
+        cmake .. -G "NMake Makefiles"
+        nmake
