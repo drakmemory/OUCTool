@@ -4,7 +4,6 @@
 #include "../ui/ImGuiLayer.h"
 #include <regex>
 #include <filesystem>
-#include <iostream>
 
 static const char* all_items[] = {"课程观看次数", "课程观看时长", "音视频观看次数", "音视频观看时长"};
 App::App()
@@ -188,6 +187,7 @@ void App::MainWindow()
             if (ImGui::Button("开始执行"))
             {
                 // 创建刷课线程
+                system("cls");
                 run_thread = std::thread([this]() {
                     auto& courses = all_courses["courses"];
                     for (int i = 0; i < courses.size(); i++) {

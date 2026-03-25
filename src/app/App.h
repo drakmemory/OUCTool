@@ -5,6 +5,7 @@
 #include "ui/ImGuiLayer.h"
 #include "utils.hpp"
 #include <nlohmann/json.hpp>
+#include <iostream>
 #include <cpr/cpr.h>
 #include <codecvt>
 #include <locale>

@@ -17,6 +17,11 @@ Window::Window(const char* title, int w, int h)
     wc.lpfnWndProc = Window::WndProc;
     wc.hInstance = GetModuleHandle(nullptr);
     wc.lpszClassName = "OUCToolWindowClass";
+    // 尝试从资源加载程序图标（资源脚本中使用 id 1）并设置到窗口类
+    HICON hIconBig = (HICON)LoadImageA(wc.hInstance, MAKEINTRESOURCEA(1), IMAGE_ICON, 48, 48, LR_DEFAULTCOLOR);
+    HICON hIconSmall = (HICON)LoadImageA(wc.hInstance, MAKEINTRESOURCEA(1), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
+    if (hIconBig) wc.hIcon = hIconBig;
+    if (hIconSmall) wc.hIconSm = hIconSmall;
     RegisterClassExA(&wc);
 
     // 居中
@@ -35,6 +40,11 @@ Window::Window(const char* title, int w, int h)
         wc.hInstance,
         nullptr
     );
+    // 如果窗口成功创建，再次设置窗口图标（确保任务栏与 Alt-Tab 显示）
+    if (hwnd) {
+        if (hIconBig) SendMessage(hwnd, WM_SETICON, ICON_BIG, (LPARAM)hIconBig);
+        if (hIconSmall) SendMessage(hwnd, WM_SETICON, ICON_SMALL, (LPARAM)hIconSmall);
+    }
     SetConsoleOutputCP(65001);
     SetConsoleCP(65001);
     ApplyCornerStyle();

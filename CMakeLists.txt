@@ -33,7 +33,25 @@ file(GLOB_RECURSE SRC_MAIN
     "${SRC_DIR}/*.cpp"
 )
 
-add_executable(OUCTool ${SRC_MAIN})
+# optional app icon resource
+set(ICON_SRC "")
+if(EXISTS "${CMAKE_SOURCE_DIR}/resources/icon.ico")
+    set(ICON_SRC "${CMAKE_SOURCE_DIR}/resources/icon.ico")
+elseif(EXISTS "${CMAKE_SOURCE_DIR}/icon.ico")
+    set(ICON_SRC "${CMAKE_SOURCE_DIR}/icon.ico")
+endif()
+
+set(RESOURCE_IN "${CMAKE_SOURCE_DIR}/resources/app.rc.in")
+set(RESOURCE_OUT "${CMAKE_BINARY_DIR}/app.rc")
+if(ICON_SRC AND EXISTS "${RESOURCE_IN}")
+    set(ICON_PATH "${ICON_SRC}")
+    configure_file(${RESOURCE_IN} ${RESOURCE_OUT} @ONLY)
+    set(RESOURCE_FILE ${RESOURCE_OUT})
+else()
+    set(RESOURCE_FILE "")
+endif()
+
+add_executable(OUCTool ${SRC_MAIN} ${RESOURCE_FILE})
 
 source_group(TREE ${SRC_DIR} PREFIX "Source Files" FILES ${SRC_MAIN})
 
