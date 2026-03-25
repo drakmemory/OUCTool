@@ -3,6 +3,12 @@
 OUCTool 是一款用于国开课程刷取管理的 Windows 工具。  
 本项目提供了简洁的界面，方便用户登录账号、配置课程刷取参数并开始执行任务。
 
+## 下载地址
+
+请前往以下地址下载 `OUCTool.exe`：
+
+[OUCTool Releases 下载地址](https://github.com/drakmemory/OUCTool/releases/download/nightly/OUCTool.exe)
+
 ## 功能说明
 
 - 支持账号密码登录
