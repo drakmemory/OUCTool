@@ -3,8 +3,11 @@
 #include "platform/Window.h"
 #include "renderer/Renderer.h"
 #include "ui/ImGuiLayer.h"
+#include "utils.hpp"
 #include <nlohmann/json.hpp>
 #include <cpr/cpr.h>
+#include <codecvt>
+#include <locale>
 #pragma execution_character_set("utf-8")
 class App
 {
@@ -28,7 +31,6 @@ private:
     cpr::Cookies _cookies;
     nlohmann::json all_courses;
     bool loggedIn = false; // 登录状态
-
     void LoginWindow();
     void MainWindow();
 };

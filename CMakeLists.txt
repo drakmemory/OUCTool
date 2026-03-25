@@ -23,6 +23,8 @@ set(SRC_DIR "${CMAKE_SOURCE_DIR}/src")
 include(cmake/imgui.cmake)
 include(cmake/cpr.cmake)
 include(cmake/json.cmake)
+include(cmake/wil.cmake) 
+include(cmake/webview2.cmake)
 
 # ---------------- 可执行文件 ----------------
 file(GLOB_RECURSE SRC_MAIN
@@ -43,6 +45,8 @@ target_include_directories(OUCTool PRIVATE
     ${imgui_SOURCE_DIR}/misc/cpp
     ${json_SOURCE_DIR}/single_include
     ${cpr_SOURCE_DIR}/include
+    ${WEBVIEW2_INCLUDE_DIR}
+    ${WIL_INCLUDE_DIR}
 )
 
 # ---------------- 链接库 ----------------
@@ -52,6 +56,11 @@ target_link_libraries(OUCTool PRIVATE
     d3d11
     dxgi
     dwmapi
+    ${WEBVIEW2_STATIC_LIB}
+    user32
+    ole32
+    shell32
+    shlwapi
 )
 # ---------------- MSVC 特定 ----------------
 if(MSVC)

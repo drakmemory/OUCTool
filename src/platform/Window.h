@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <Windows.h>
 
 class Window
@@ -10,11 +10,13 @@ public:
     bool ShouldClose() const;
     void PollEvents();
     HWND GetHWND() const { return hwnd; }
+    HINSTANCE GethInstance() const { return hInstance; }
 	int GetWidth() const { return width; }
 	int GetHeight() const { return height; }
 
 private:
     HWND hwnd = nullptr;
+    HINSTANCE hInstance = nullptr;
     bool quitMessageReceived = false;
     int width = 0;
     int height = 0;

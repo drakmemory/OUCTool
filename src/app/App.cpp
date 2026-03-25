@@ -1,5 +1,4 @@
-﻿#pragma execution_character_set("utf-8")
-#include "App.h"
+﻿#include "App.h"
 #include "../platform/Window.h"
 #include "../renderer/Renderer.h"
 #include "../ui/ImGuiLayer.h"
@@ -190,7 +189,7 @@ void App::MainWindow()
             {
                 // 创建刷课线程
                 run_thread = std::thread([this]() {
-                    auto& courses = this->all_courses["courses"];
+                    auto& courses = all_courses["courses"];
                     for (int i = 0; i < courses.size(); i++) {
                         // 获取学习过的课
                         auto course_id = courses[i]["id"].get<long long>();
@@ -198,7 +197,7 @@ void App::MainWindow()
                             "https://lms.ouchn.cn/api/course/{}/activity-reads-for-user",
                             course_id
 						));
-                        nlohmann::json activity_reads,all_completeness, modules, all_activity;
+                        nlohmann::json activity_reads, all_completeness, modules, all_activity;
 						cpr::Response r = session->Get();
                         if (r.status_code == 200)
                         {
@@ -275,19 +274,20 @@ void App::MainWindow()
                         if (!std::string(courseValue[i][1]).empty())
                         {
                             nlohmann::json visit_payload = {
-                                {"user_id", this->userId},
+                                {"user_id", userId},
                                 {"course_id", course_id},
                                 {"visit_duration", std::stoll(courseValue[i][1])}
                             };
+							session->SetHeader(cpr::Header{ {"Content-Type", "text/plain;charset=UTF-8"} });
                             session->SetBody(cpr::Body{ visit_payload.dump() });
                             session->Post();
                         }
 						// 开始刷观看次数
                         if (!std::string(courseValue[i][0]).empty())
-                            for (int i = 0; i < std::stoi(courseValue[i][0]) - 1; i++)
+                            for (int o = 0; o < std::stoi(courseValue[i][0]) - 1; o++)
                             {
                                 nlohmann::json visit_payload = {
-                                {"user_id", this->userId},
+                                {"user_id", userId},
                                 {"course_id", course_id},
                                 {"visit_duration", 0}
                                 };
@@ -296,6 +296,35 @@ void App::MainWindow()
                                 // 防止屏蔽请求，间隔8秒刷一次
                                 std::this_thread::sleep_for(std::chrono::seconds(8));
                             }
+                        // 开始刷音视频时长
+                        session->SetUrl("https://lms.ouchn.cn/statistics/api/user-visits");
+                        if (!std::string(courseValue[i][3]).empty())
+                        {
+                            nlohmann::json visit_payload = {
+                                {"user_id", userId},
+                                {"course_id", course_id},
+                                {"activity_type", "online_video"},
+                                {"visit_duration", std::stoll(courseValue[i][1])}
+                            };
+                            session->SetBody(cpr::Body{ visit_payload.dump() });
+                            session->Post();
+                        }
+						// 开始刷音视频观看次数
+                        if (!std::string(courseValue[i][2]).empty())
+                            for (int o = 0; o < std::stoi(courseValue[i][0]) - 1; o++)
+                            {
+                                nlohmann::json visit_payload = {
+                                {"user_id", userId},
+                                {"course_id", course_id},
+                                {"activity_type", "online_video"},
+                                {"visit_duration", 0}
+                                };
+                                session->SetBody(cpr::Body{ visit_payload.dump() });
+                                session->Post();
+                                // 防止屏蔽请求，间隔8秒刷一次
+                                std::this_thread::sleep_for(std::chrono::seconds(8));
+                            }
+						std::cout << courses[i]["name"].get<std::string>() << "课程刷取完成！" << std::endl;
                     }
                     });
                 run_thread.detach();
@@ -335,7 +364,8 @@ void App::LoginWindow()
         ImGuiWindowFlags_NoScrollbar;
 
     // 只有 Begin 返回 true 时才进行绘制
-    if (ImGui::Begin("LoginWindow", nullptr, window_flags))
+    ImGui::Begin("LoginWindow", nullptr, window_flags);
+    bool shouldCloseWebWindow = false;
     {
         // ----- 标题 -----
         ImGui::SetCursorPosY(35);
@@ -345,7 +375,7 @@ void App::LoginWindow()
         ImGui::SetCursorPosX(title_x);
         // 使用超深灰色（近黑），确保看得清
         ImGui::TextColored(ImVec4(0.f, 0.f, 0.f, 1.0f), title);
-		ImGui::PopFont();
+        ImGui::PopFont();
 
         ImGui::Spacing(); ImGui::Spacing(); ImGui::Spacing();
 
@@ -365,7 +395,7 @@ void App::LoginWindow()
             bool hovered = ImGui::IsItemHovered();
             bool active = ImGui::IsItemActive();
             ImGui::PopItemWidth();
-			ImU32 line_color = hovered || active ? IM_COL32(10, 10, 10, 255) : IM_COL32(210, 210, 210, 255);
+            ImU32 line_color = hovered || active ? IM_COL32(10, 10, 10, 255) : IM_COL32(210, 210, 210, 255);
             // 绘制底部的横线
             ImVec2 p1 = ImVec2(p0.x + ImGui::GetContentRegionAvail().x, ImGui::GetItemRectMax().y + 2);
             draw_list->AddLine(ImVec2(p0.x, p1.y), p1, line_color, 1.5f);
@@ -395,46 +425,103 @@ void App::LoginWindow()
         if (ImGui::Button(login_btn_text.c_str(), ImVec2(win_size.x - 50, 40)) && !loginInProgress) {
             // 登录逻辑
             login_btn_text = "登录中...";
+
+            // 登录失败，可能是因为验证码等原因，调用webview2手动登录一次获取cookie
             std::thread([this]() {
-				this->loginInProgress = true;
+                loginInProgress = true;
                 session->SetUrl("https://iam.pt.ouchn.cn/am/oauth2/doLogin");
-                session->SetPayload(cpr::Payload{ {"name", this->username}, {"pwd", this->password} });
+                session->SetPayload(cpr::Payload{ {"name", username}, {"pwd", password} });
                 session->SetHeader(cpr::Header{ {"Content-Type", "application/x-www-form-urlencoded"} });
-                session->Post();
+                session->SetUserAgent(cpr::UserAgent{ "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" });
+                cpr::Response r = session->Post();
                 session->SetUrl("https://lms.ouchn.cn/user/courses");
-                cpr::Response r = session->Get();
+                r = session->Get();
                 std::regex id_regex(R"(id: (\d+))");
                 std::regex name_regex(R"##(name: "(.*)")##");
                 std::smatch id_match;
                 std::smatch name_match;
                 if (std::regex_search(r.text, id_match, id_regex) && std::regex_search(r.text, name_match, name_regex)) {
-                    this->userId = std::stoll(id_match[1]);
-                    this->name = name_match[1].str();
-                    this->loggedIn = true;
-					this->loginInProgress = false;
-					login_btn_text = "登录";
+                    userId = std::stoll(id_match[1]);
+                    name = name_match[1].str();
+                    loggedIn = true;
+                    loginInProgress = false;
+                    login_btn_text = "登录";
                     nlohmann::json user_info = {
-                        {"name", this->username},
-                        {"pwd", this->password}
-					};
+                        {"name", username},
+                        {"pwd", password}
+                    };
                     std::ofstream ofs("user_info.json");
                     ofs << user_info.dump(4);
-					ofs.close();
+                    ofs.close();
                     return;
                 }
-                this->loginInProgress = false; 
-                login_btn_text = "登录";
-				}).detach();
+				// 登录失败，调用webview2手动登录一次获取cookie
+				if (!r.text.contains("用户信息为空")) // 过滤用户名或密码错误的情况
+                {
+                    ShowWindow(imGuiLayer->webHWND, SW_SHOW);
+                    SetWindowPos(imGuiLayer->webHWND, NULL, 100, 100, 800, 600, SWP_NOZORDER);
+                }
+                }).detach();
+        }
+        auto title_str = imGuiLayer->WebView.GetCurrentTitle();
+        if (title_str == "统一身份认证平台")
+        {
+            // 使用 nlohmann::json 生成安全的 JS 字面量，防止用户名/密码中含特殊字符导致脚本语法错误或注入
+            std::string jsUser = nlohmann::json(std::string(username)).dump();
+            std::string jsPass = nlohmann::json(std::string(password)).dump();
+            std::string js = std::format("var el = document.querySelector('input[name=\"name\"]'); if (el) el.value = {};", jsUser);
+            js += std::format("var ep = document.querySelector('input[name=\"pwd\"]'); if (ep) ep.value = {};", jsPass);
+
+            // 将 UTF-8 JS 字符串转换为 UTF-16 (wide string) 以传递给 WebView2
+            int required = MultiByteToWideChar(CP_UTF8, 0, js.c_str(), -1, nullptr, 0);
+            if (required > 0) {
+                std::wstring wjs(required - 1, L'\0');
+                MultiByteToWideChar(CP_UTF8, 0, js.c_str(), -1, &wjs[0], required);
+                imGuiLayer->WebView.Get()->ExecuteScript(wjs.c_str(), nullptr);
+            }
+        }
+        else if (title_str.contains("我的课程"))
+        {
+            std::string cookies = imGuiLayer->WebView.GetCookieString(L"https://lms.ouchn.cn/");
+			std::cout << "获取到 Cookie: " << cookies << std::endl;
+            if (!cookies.empty()) {
+                session->SetHeader(cpr::Header{ {"Cookie", cookies} });
+                session->SetUrl("https://lms.ouchn.cn/user/courses");
+                auto r = session->Get();
+                std::regex id_regex(R"(id: (\d+))");
+                std::regex name_regex(R"##(name: "(.*)")##");
+                std::smatch id_match;
+                std::smatch name_match;
+                if (std::regex_search(r.text, id_match, id_regex) && std::regex_search(r.text, name_match, name_regex)) {
+                    userId = std::stoll(id_match[1]);
+                    name = name_match[1].str();
+                    loggedIn = true;
+                    loginInProgress = false;
+                    login_btn_text = "登录";
+                    nlohmann::json user_info = {
+                        {"name", username},
+                        {"pwd", password}
+                    };
+                    std::ofstream ofs("user_info.json");
+                    ofs << user_info.dump(4);
+                    ofs.close();
+                    shouldCloseWebWindow = true;
+                }
+            }
         }
 
         ImGui::PopStyleColor(4);
         ImGui::PopStyleVar(1); // 弹出 FrameRounding
     }
-
     // 4. 结束窗口
     ImGui::End();
 
     // 5. 统一清理样式（必须在 End 之后）
     ImGui::PopStyleColor();
     ImGui::PopStyleVar(2);
+
+    if (shouldCloseWebWindow && imGuiLayer->webHWND) {
+        DestroyWindow(imGuiLayer->webHWND);
+        imGuiLayer->webHWND = nullptr;
+    }
 }
