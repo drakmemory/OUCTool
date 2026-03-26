@@ -261,7 +261,6 @@ void App::MainWindow()
                                     session->SetHeader(cpr::Header{ {"Content-Type", "application/json"} });
                                     session->SetBody(cpr::Body{ body.dump()});
                                     auto r1 = session->Post();
-                                    std::cout << r1.text;
 									std::cout << "正在刷取课程\"" << name.c_str() << "\"的文件..." << std::endl;
                                 }
                             }else
@@ -483,7 +482,6 @@ void App::LoginWindow()
         else if (title_str.contains("我的课程"))
         {
             std::string cookies = imGuiLayer->WebView.GetCookieString(L"https://lms.ouchn.cn/");
-			std::cout << "获取到 Cookie: " << cookies << std::endl;
             if (!cookies.empty()) {
                 session->SetHeader(cpr::Header{ {"Cookie", cookies} });
                 session->SetUrl("https://lms.ouchn.cn/user/courses");
