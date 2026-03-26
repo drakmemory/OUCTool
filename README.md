@@ -54,7 +54,16 @@ OUCTool 是一款用于国开课程刷取管理的 Windows 工具。
 
 ### 1. 程序打不开怎么办？
 
-请确认已正确下载 `OUCTool.exe`，并检查系统是否拦截了程序运行。
+如果程序启动后出现闪退，请先检查运行库是否安装完整。  
+本项目需要以下运行库支持：
+
+- **C++ 运行库**
+  - 64 位下载地址：<https://aka.ms/vs/17/release/vc_redist.x64.exe>
+  - 32 位下载地址：<https://aka.ms/vs/17/release/vc_redist.x86.exe>
+- **WebView 运行库**
+  - 下载地址：<https://developer.microsoft.com/zh-cn/microsoft-edge/webview2/>
+
+安装完成后，请重新启动电脑，再次运行程序。如果问题仍然存在，请确认系统版本是否满足软件运行要求。
 
 ### 2. 为什么会弹出浏览器？
 
