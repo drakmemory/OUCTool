@@ -32,6 +32,7 @@ private:
     cpr::Cookies _cookies;
     nlohmann::json all_courses;
     bool loggedIn = false; // 登录状态
+	bool executing = false; // 执行中状态
     void LoginWindow();
     void MainWindow();
 };

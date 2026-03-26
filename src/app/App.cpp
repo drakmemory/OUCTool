@@ -184,9 +184,10 @@ void App::MainWindow()
 			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(148, 63, 236, 255)); // 悬停状态
 			ImGui::PushStyleColor(ImGuiCol_ButtonActive, IM_COL32(118, 23, 206, 255));  // 点击状态
 			ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 255, 255, 255));          // 文字白色
-            if (ImGui::Button("开始执行"))
+            if (ImGui::Button("开始执行") && !executing)
             {
                 // 创建刷课线程
+                executing = true;
                 system("cls");
                 run_thread = std::thread([this]() {
                     auto& courses = all_courses["courses"];
@@ -324,6 +325,7 @@ void App::MainWindow()
                                 std::this_thread::sleep_for(std::chrono::seconds(8));
                             }
 						std::cout << courses[i]["name"].get<std::string>() << "课程刷取完成！" << std::endl;
+						executing = false;
                     }
                     });
                 run_thread.detach();
